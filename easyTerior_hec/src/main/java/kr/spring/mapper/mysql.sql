@@ -12,6 +12,25 @@ CREATE TABLE member(
 	PRIMARY KEY(memID) --  기본키
 );
 
+
+CREATE TABLE testsavestyle(
+	styleIdx INT AUTO_INCREMENT,
+	resultClass1 VARCHAR(1000) NOT NULL,
+	resultClass2 VARCHAR(1000) NOT NULL,
+	resultClass1_probability VARCHAR(1000) NOT NULL,
+	resultClass2_probability VARCHAR(1000) NOT NULL,
+	memID VARCHAR(50),
+	PRIMARY KEY(styleIdx)
+);
+
+DROP TABLE testsavestyle;
+
+SELECT * FROM testsavestyle;
+
+INSERT INTO testsavestyle (styletype, memID)
+VALUES('text', 'null')
+
+
 -- DROP TABLE member;
 SELECT * FROM member;
 
