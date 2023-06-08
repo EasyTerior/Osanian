@@ -22,11 +22,20 @@
 	href="https://cdn.jsdelivr.net/npm/boxicons@latest/css/boxicons.min.css"
 	rel="stylesheet" />
 <!-- icons -->
-<script
-	src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
+<script	src="https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js"></script>
 	
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
+	<!-- BX 슬라이더 관련 라이브러리 호출 시작 --> 
+    <!-- jQuery library
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+	 -->
+	
+	
+    <!-- bxSlider Javascript file -->
+    <script src="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.min.js"></script>
+
+    <!-- bxSlider CSS file -->
+    <link href="https://cdn.jsdelivr.net/bxslider/4.2.12/jquery.bxslider.css" rel="stylesheet" />
+    <!-- BX 슬라이더 관련 라이브러리 호출 종료 --> 
 
 <style>
 body, main, section {
@@ -40,11 +49,13 @@ body, main, section {
 	    margin-bottom:20px;
  
  } 
+ 
+ 
 </style>
 <script type="text/javascript">
 	var csrfHeaderName = "${_csrf.headerName}";
 	var csrfTokenValue = "${_csrf.token}";
-
+	var slider;
 	
 	$(document).ready(function(){
 		// 회원가입 후 modal 표시
@@ -75,7 +86,7 @@ body, main, section {
 	          // 결과 처리
 	          resultData = result;
 	          displayResult(result);
-	          
+
 	          // 쇼핑 API 호출
 	          callShoppingAPI(result);
 	          
@@ -107,47 +118,70 @@ body, main, section {
 	    }
 	  });
 	  
+	// bxSlider 인스턴스를 가리킬 변수를 선언합니다.
+/*	  var slider = $('#bxslider').bxSlider({
+          minSlides: 5,
+          maxSlides: 100,
+          moveSlides: 3,
+          slideWidth: 300,
+          slideMargin: 5,
+          mode: 'horizontal',
+          auto: true,
+          pause: 3000,
+          speed: 1000
+      }); */
+
 	  function callShoppingAPI(result) {
-		    var style = result[0].class;
-		    
-		    $.ajax({
-		        url: 'http://localhost:5000/api/style_analysis',
-		        type: 'POST',
-		        data: JSON.stringify({ style: style }),
-		        contentType: 'application/json',
-		        dataType: 'json',
-		        success: function(response) {
-		            var image_urls = response.image_urls;
-		            var image_src = response.image_src;
-		            $('.bxslider').empty();  // 이미지 슬라이더 초기화
+	      var style = result[0].class;
+          var image_urls = result[2].image_urls;
+          console.log(image_urls);
+          var image_src = result[2].image_src;
+          console.log(image_src);
+	      /*$.ajax({
+	          url: 'http://localhost:5000/api/style_analysis',
+	          type: 'POST',
+	          data: JSON.stringify({ style: style }),
+	          contentType: 'application/json',
+	          dataType: 'json',
+	          success: function(response) {
+	              var image_urls = response.image_urls;
+	              var image_src = response.image_src;
+		             */
+			$('#bxslider').empty();
 
-		            // 이미지 슬라이더에 받아온 이미지 URL 추가
-		            for(var i = 0; i < image_urls.length; i++) {
-		                $('.bxslider').append('<a href="'+image_urls[i]+'"><img src="'+image_src[i]+'" width="220px" height="120px"></a>');
+	              for(var i = 0; i < image_urls.length; i++) {
+	                  $('#bxslider').append('<a href="'+image_urls[i]+'"><img src="'+image_src[i]+'" width="220px" height="220px"></a>');
+	              }
+	              
 
-		                // if it's the last image, initialize the bxSlider
-		                //$(document).ready(function(){
-		                
-		                    $('.bxslider').bxSlider({
-		                        minSlides: 4, // 한번에 보여질 슬라이드 최소 개수
-		                        maxSlides: 4, // 최대 개수
-		                        moveSlides: 1, // 한번에 움직이는 슬라이드 개수
-		                        slideWidth: 200, // 각 슬라이드의 폭 크기
-		                        slideMargin: 1, // 슬라이드 간 여백
-		                        mode: 'horizontal',
-		                        auto: true, // 자동
-		                        pause: 3000,
-		                        speed: 1000
-		                    });
-		                
-		            //});
-		            }
-		        },
-		        error: function(error) {
-		            console.log(error);
-		        }
-		    });
-		}
+					
+
+	              // 이미지 로딩을 위해 약간의 시간을 기다립니다.
+	              setTimeout(function() {
+	            	    if (slider) {
+	            	        slider.destroySlider(); // 기존 슬라이더가 존재하는 경우 파괴합니다.
+	            	    }
+	            	    // 새로운 슬라이더를 생성하고 인스턴스를 저장합니다.
+	            	    slider = $('#bxslider').bxSlider({
+	            	        minSlides: 2,
+	            	        maxSlides: 100,
+	            	        moveSlides: 2,
+	            	        slideWidth: 300,
+	            	        slideMargin: 2,
+	            	        mode: 'horizontal',
+	            	        auto: true,
+	            	        pause: 3000,
+	            	        speed: 1000
+	            	    });
+	            	    console.log(slider);
+	            	}, 500);
+	          }/*,
+	          error: function(error) {
+	              console.log(error);
+	          }
+	      });
+	  }*/
+
 
 
 
@@ -156,6 +190,7 @@ body, main, section {
 	    function showBase() {
 	        $("#result").css("display", "none");
 	        $("#base").css("display", "block");
+
 	    }
 		
 
@@ -282,10 +317,9 @@ body, main, section {
 				<br>
 				<p class="pline">이 스타일과 관련된 인테리어 소품을 추천해드릴게요!</p>
 				<br>
-				<div class="bxslider" style="text-align:center;">
-					<c:forEach var="url" items="${image_urls}">
-						<img src="${url}" width="240px" height="160px">
-					</c:forEach>
+				<div>
+				<div id="bxslider">
+				</div>
 				</div>
 
 			</div>

@@ -14,6 +14,10 @@ CORS(app)
 # 모델 불러오기
 model = load_model("C:/Users/user/Downloads/89216(ver8,flip).h5")
 
+#쇼핑 API 연동
+client_id = "YmwEYBDY7aXnrocNn5Zx"
+client_secret = "0daNsnl46p"
+
 # 예측에 사용할 함수 정의
 def find_class(file):
     # 테스트할 이미지 로드 및 전처리
@@ -51,8 +55,31 @@ def find_class(file):
         class_name = class_map[class_index]
         class_probability = float(predictions[0][class_index])
         result.append({"class": class_name, "probability": class_probability, "explanation": class_Explanation[class_index]})
+    style=result[0]['class']
+    shopping_result = style_analysis(style)
+    result.append(shopping_result)
     print(result)
     return result
+
+def style_analysis(style):
+    #style = request.json['style']+"스타일 가구"
+    #print(style)
+    encText = urllib.parse.quote(style+"스타일 가구")
+    url = "https://openapi.naver.com/v1/search/shop?query=" + encText+"&sort=date"
+    api_request = urllib.request.Request(url)
+    api_request.add_header("X-Naver-Client-Id",client_id)
+    api_request.add_header("X-Naver-Client-Secret",client_secret)
+    response = urllib.request.urlopen(api_request)
+    rescode = response.getcode()
+
+    if(rescode==200):
+        response_body = response.read()
+        response_dict = json.loads(response_body.decode('utf-8'))
+        image_urls = [item['link'] for item in response_dict['items'][:10]] if response_dict['items'] else []
+        image_src = [item['image'] for item in response_dict['items'][:10]] if response_dict['items'] else []
+        return {'image_urls': image_urls,'image_src':image_src}
+    else:
+        return {'error': 'API request error'}
 
 # 이미지 업로드 및 결과 반환하는 엔드포인트 정의
 @app.route("/upload", methods=["POST"])
@@ -74,33 +101,31 @@ def upload_image():
     return jsonify(result)
 
 
-#쇼핑 API 연동
-client_id = "YmwEYBDY7aXnrocNn5Zx"
-client_secret = "0daNsnl46p"
 
-@app.route('/api/style_analysis', methods=['POST'])
-def style_analysis():
-    if request.method == 'POST':
-        style = request.json['style']+"스타일 가구"
-        print(style)
-        encText = urllib.parse.quote(style)
-        url = "https://openapi.naver.com/v1/search/shop?query=" + encText+"&display=10&sort=date"
-        api_request = urllib.request.Request(url)
-        api_request.add_header("X-Naver-Client-Id",client_id)
-        api_request.add_header("X-Naver-Client-Secret",client_secret)
-        response = urllib.request.urlopen(api_request)
-        rescode = response.getcode()
 
-        if(rescode==200):
-            response_body = response.read()
-            print(response_body)
-            response_dict = json.loads(response_body.decode('utf-8'))
-            print(response_dict)
-            image_urls = [item['link'] for item in response_dict['items'][:10]] if response_dict['items'] else []
-            image_src = [item['image'] for item in response_dict['items'][:10]] if response_dict['items'] else []
-            return jsonify({'image_urls': image_urls,'image_src':image_src}), 200
-        else:
-            return jsonify({'error': 'API request error'}), 500
+# @app.route('/api/style_analysis', methods=['POST'])
+# def style_analysis(style):
+#     if request.method == 'POST':
+#         style = request.json['style']+"스타일 가구"
+#         #print(style)
+#         encText = urllib.parse.quote(style)
+#         url = "https://openapi.naver.com/v1/search/shop?query=" + encText+"&sort=date"
+#         api_request = urllib.request.Request(url)
+#         api_request.add_header("X-Naver-Client-Id",client_id)
+#         api_request.add_header("X-Naver-Client-Secret",client_secret)
+#         response = urllib.request.urlopen(api_request)
+#         rescode = response.getcode()
+
+#         if(rescode==200):
+#             response_body = response.read()
+#             #print(response_body)
+#             response_dict = json.loads(response_body.decode('utf-8'))
+#             #print(response_dict)
+#             image_urls = [item['link'] for item in response_dict['items'][:10]] if response_dict['items'] else []
+#             image_src = [item['image'] for item in response_dict['items'][:10]] if response_dict['items'] else []
+#             return jsonify({'image_urls': image_urls,'image_src':image_src}), 200
+#         else:
+#             return jsonify({'error': 'API request error'}), 500
 
 
 if __name__ == "__main__":
